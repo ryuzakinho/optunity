@@ -242,7 +242,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
     num_evals = -len(f.call_log)
     saved_f = pickle.load(open('/tmp/optunity_saves/saved.pkl', 'rb'))
     if saved_f:
-        f.call_log.data = f_saved
+        f.call_log.data = saved_f
 
     time = timeit.default_timer()
     while True:
