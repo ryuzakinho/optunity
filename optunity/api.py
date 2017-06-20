@@ -246,6 +246,11 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
         # We are restoring.
         max_evals = saved_f['max_evals']
 
+        missing_evals = max_evals // 2
+        while missing_evals != 0:
+            max_evals += missing_evals
+            missing_evals = missing_evals // 2
+
         if max_evals > 0:
             f = fun.max_evals(max_evals)(func)
         else:
