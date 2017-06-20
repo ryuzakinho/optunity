@@ -232,6 +232,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
     and optunity.maximize_stats.
 
     """
+    max_evals += max_evals // 2 - 1
 
     if max_evals > 0:
         f = fun.max_evals(max_evals)(func)
@@ -258,7 +259,6 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
         except fun.ModuloEvaluationsException:
             # We need to save f in order for it to be used later.
             pickle.dump(f.call_log.data, open('/tmp/optunity_saves/saved.pkl', 'wb'))
-
         except fun.MaximumEvaluationsException:
             # early stopping because maximum number of evaluations is reached
             # retrieve solution from the call log
