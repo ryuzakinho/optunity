@@ -362,7 +362,7 @@ def max_evals(max_evals, save_frequency=1):
         def wrapped_f(*args, **kwargs):
             if wrapped_f.num_evals >= max_evals:
                 raise MaximumEvaluationsException(max_evals)
-            elif wrapped_f.num_evals % save_frequency:
+            elif wrapped_f.num_evals % save_frequency == 0:
                 raise ModuloEvaluationsException(wrapped_f.num_evals)
             else:
                 wrapped_f.num_evals += 1
