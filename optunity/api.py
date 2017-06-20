@@ -232,7 +232,11 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
     and optunity.maximize_stats.
 
     """
-    max_evals += max_evals // 2 - 1
+
+    missing_evals = max_evals // 2 - 1
+    while missing_evals != 0:
+        max_evals += missing_evals
+        missing_evals = missing_evals // 2
 
     if max_evals > 0:
         f = fun.max_evals(max_evals)(func)
