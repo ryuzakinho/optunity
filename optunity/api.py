@@ -250,7 +250,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             solution, report = solver.optimize(f, maximize, pmap=pmap)
         except fun.ModuloEvaluationsException:
             # We need to save f in order for it to be used later.
-            pickle.dump(f, open('/home/ultimateai/Desktop', 'rb'))
+            pickle.dump(f, open('/tmp/optunity_saves/saved.pkl', 'rb'))
 
         except fun.MaximumEvaluationsException:
             # early stopping because maximum number of evaluations is reached
@@ -412,4 +412,3 @@ def minimize_structured(f, search_space, num_evals=50, pmap=map):
     solution, details = optimize(solver, f, maximize=False, max_evals=num_evals,
                                  pmap=pmap, decoder=tree.decode)
     return solution, details, suggestion
-
