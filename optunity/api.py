@@ -233,16 +233,14 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
 
     """
 
-    if saved_f:
-        f = saved_f
+    if max_evals > 0:
+        f = fun.max_evals(max_evals)(func)
     else:
-        if max_evals > 0:
-            f = fun.max_evals(max_evals)(func)
-        else:
-            f = func
+        f = func
 
     f = fun.logged(f)
     num_evals = -len(f.call_log)
+    f.call_log = f_saved
 
     time = timeit.default_timer()
     while True:
@@ -250,7 +248,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             solution, report = solver.optimize(f, maximize, pmap=pmap)
         except fun.ModuloEvaluationsException:
             # We need to save f in order for it to be used later.
-            pickle.dump(f, open('/tmp/optunity_saves/saved.pkl', 'wb'))
+            pickle.dump(f.call_log, open('/tmp/optunity_saves/saved.pkl', 'wb'))
 
         except fun.MaximumEvaluationsException:
             # early stopping because maximum number of evaluations is reached
