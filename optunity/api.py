@@ -242,7 +242,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
 
     if saved_f:
         # We are restoring.
-        max_evals = saved_f['log_data']
+        max_evals = saved_f['max_evals']
 
         if max_evals > 0:
             f = fun.max_evals(max_evals)(func)
@@ -254,6 +254,8 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
         while len(saved_f['log_data']) > 0:
             key, value = saved_f['log_data'].popitem()
             f.call_log.insert(value, **key._asdict())
+
+        f.num_evals = saved_f['num_evals']
 
     else:
         # We are not restoring.
