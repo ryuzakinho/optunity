@@ -324,7 +324,18 @@ class MaximumEvaluationsException(Exception):
         return self._max_evals
 
 
-def max_evals(max_evals):
+class ModuloEvaluationsException(Exception):
+    """Raised when the number of function evaluations without saving are used."""
+    def __init__(self, num_evals):
+        self._num_evals = num_evals
+
+    @property
+    def num_evals(self):
+        """Returns the number of evaluations without saving that was permitted."""
+        return self._num_evals
+
+
+def max_evals(max_evals, save_frequency=5):
     """Decorator to enforce a maximum number of function evaluations.
 
     Throws a MaximumEvaluationsException during evaluations after
@@ -351,6 +362,8 @@ def max_evals(max_evals):
         def wrapped_f(*args, **kwargs):
             if wrapped_f.num_evals >= max_evals:
                 raise MaximumEvaluationsException(max_evals)
+            elif wrapped_f.num_evals % save_frequency:
+                raise ModuloEvaluationsException(wrapped_f.num_evals)
             else:
                 wrapped_f.num_evals += 1
                 return f(*args, **kwargs)

@@ -53,6 +53,7 @@ e.g. :mod:`optunity.solvers`.
 import timeit
 import sys
 import operator
+import pickle
 
 # optunity imports
 from . import functions as fun
@@ -213,7 +214,7 @@ def minimize(f, num_evals=50, solver_name=None, pmap=map, **kwargs):
     return solution, details, suggestion
 
 
-def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None):
+def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, saved_f=None):
     """Optimizes func with given solver.
 
     :param solver: the solver to be used, for instance a result from :func:`optunity.make_solver`
@@ -232,26 +233,36 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None):
 
     """
 
-    if max_evals > 0:
-        f = fun.max_evals(max_evals)(func)
+    if saved_f:
+        f = saved_f
     else:
-        f = func
+        if max_evals > 0:
+            f = fun.max_evals(max_evals)(func)
+        else:
+            f = func
 
     f = fun.logged(f)
     num_evals = -len(f.call_log)
 
     time = timeit.default_timer()
-    try:
-        solution, report = solver.optimize(f, maximize, pmap=pmap)
-    except fun.MaximumEvaluationsException:
-        # early stopping because maximum number of evaluations is reached
-        # retrieve solution from the call log
-        report = None
-        if maximize:
-            index, _ = max(enumerate(f.call_log.values()), key=operator.itemgetter(1))
-        else:
-            index, _ = min(enumerate(f.call_log.values()), key=operator.itemgetter(1))
-        solution = list(f.call_log.keys())[index]._asdict()
+    while True:
+        try:
+            solution, report = solver.optimize(f, maximize, pmap=pmap)
+        except fun.ModuloEvaluationsException:
+            # We need to save f in order for it to be used later.
+            pickle.dump(f, open('/home/ultimateai/Desktop', 'rb'))
+
+        except fun.MaximumEvaluationsException:
+            # early stopping because maximum number of evaluations is reached
+            # retrieve solution from the call log
+            report = None
+            if maximize:
+                index, _ = max(enumerate(f.call_log.values()), key=operator.itemgetter(1))
+            else:
+                index, _ = min(enumerate(f.call_log.values()), key=operator.itemgetter(1))
+            solution = list(f.call_log.keys())[index]._asdict()
+            # No need to loop again
+            break
     time = timeit.default_timer() - time
 
     # TODO why is this necessary?
