@@ -256,6 +256,8 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
         else:
             f = func
 
+        f.num_evals = saved_f['num_evals']
+
         f = fun.logged(f)
 
         while len(saved_f['log_data']) > 0:
