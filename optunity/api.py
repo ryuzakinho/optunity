@@ -244,9 +244,9 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
     except FileNotFoundError:
         saved_f = None
 
-    if saved_f:
+        if saved_f:
         for key in saved_f:
-            f.call_log.insert(saved_f[key], 0.0)
+            f.call_log.insert(0.0, key)
 
     num_evals = -len(f.call_log)
 
