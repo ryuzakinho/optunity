@@ -233,6 +233,8 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
 
     """
 
+    original_max_evals = max_evals
+
     try:
         # TODO: provide a path to the file.
         # Trying to load a pickle for now.
@@ -280,7 +282,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             if saved_f:
                 dict_to_save = {'log_data': f.call_log.data, 'max_evals': saved_f['max_evals'], 'num_evals': num_evals}
             else:
-                dict_to_save = {'log_data': f.call_log.data, 'max_evals': max_evals, 'num_evals': num_evals}
+                dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals, 'num_evals': num_evals}
             pickle.dump(dict_to_save, open('/tmp/optunity_saves/saved.pkl', 'wb'))
         except fun.MaximumEvaluationsException:
             # early stopping because maximum number of evaluations is reached
