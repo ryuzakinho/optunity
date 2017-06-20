@@ -245,7 +245,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
         saved_f = None
 
     if saved_f:
-        for key in saved_f:
+        while len(saved_f) > 0:
             f.call_log.insert(saved_f[key], **(saved_f.popitem())[0]._asdict())
 
     num_evals = -len(f.call_log)
