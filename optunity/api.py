@@ -239,10 +239,14 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
         f = func
 
     f = fun.logged(f)
-    saved_f = pickle.load(open('/tmp/optunity_saves/saved.pkl', 'rb'))
+    try:
+        saved_f = pickle.load(open('/tmp/optunity_saves/saved.pkl', 'rb'))
+    except FileNotFoundError:
+        saved_f = None
+
     if saved_f:
         for key in saved_f:
-            f.call_log.insert(saved_f[key], key)
+            f.call_log.insert(saved_f[key], 0.0)
 
     num_evals = -len(f.call_log)
 
