@@ -205,7 +205,7 @@ def minimize(f, num_evals=50, solver_name=None, pmap=map, **kwargs):
     assert all([len(v) == 2 and v[0] < v[1]
                 for v in kwargs.values()]), 'Box constraints improperly specified: should be [lb, ub] pairs'
 
-    func =  _wrap_hard_box_constraints(f, kwargs, sys.float_info.max)
+    func = _wrap_hard_box_constraints(f, kwargs, sys.float_info.max)
 
     suggestion = suggest_solver(num_evals, solver_name, **kwargs)
     solver = make_solver(**suggestion)
@@ -233,26 +233,41 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
 
     """
 
-    missing_evals = max_evals // 2
-    while missing_evals != 0:
-        max_evals += missing_evals
-        missing_evals = missing_evals // 2
-
-    if max_evals > 0:
-        f = fun.max_evals(max_evals)(func)
-    else:
-        f = func
-
-    f = fun.logged(f)
     try:
+        # TODO: provide a path to the file.
+        # Trying to load a pickle for now.
         saved_f = pickle.load(open('/tmp/optunity_saves/saved.pkl', 'rb'))
     except FileNotFoundError:
         saved_f = None
 
     if saved_f:
-        while len(saved_f) > 0:
-            key, value = saved_f.popitem()
+        # We are restoring.
+        max_evals = saved_f['log_data']
+
+        if max_evals > 0:
+            f = fun.max_evals(max_evals)(func)
+        else:
+            f = func
+
+        f = fun.logged(f)
+
+        while len(saved_f['log_data']) > 0:
+            key, value = saved_f['log_data'].popitem()
             f.call_log.insert(value, **key._asdict())
+
+    else:
+        # We are not restoring.
+        missing_evals = max_evals // 2
+        while missing_evals != 0:
+            max_evals += missing_evals
+            missing_evals = missing_evals // 2
+
+        if max_evals > 0:
+            f = fun.max_evals(max_evals)(func)
+        else:
+            f = func
+
+        f = fun.logged(f)
 
     num_evals = -len(f.call_log)
 
@@ -262,7 +277,8 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             solution, report = solver.optimize(f, maximize, pmap=pmap)
         except fun.ModuloEvaluationsException:
             # We need to save f in order for it to be used later.
-            pickle.dump(f.call_log.data, open('/tmp/optunity_saves/saved.pkl', 'wb'))
+            dict_to_save = {'log_data': f.call_log.data, 'max_evals': max_evals, 'num_evals': num_evals}
+            pickle.dump(dict_to_save, open('/tmp/optunity_saves/saved.pkl', 'wb'))
         except fun.MaximumEvaluationsException:
             # early stopping because maximum number of evaluations is reached
             # retrieve solution from the call log
@@ -391,6 +407,7 @@ def maximize_structured(f, search_space, num_evals=50, pmap=map):
     solution, details = optimize(solver, f, maximize=True, max_evals=num_evals,
                                  pmap=pmap, decoder=tree.decode)
     return solution, details, suggestion
+
 
 def minimize_structured(f, search_space, num_evals=50, pmap=map):
     """Basic function minimization routine. Minimizes ``f`` within
