@@ -335,7 +335,7 @@ class ModuloEvaluationsException(Exception):
         return self._num_evals
 
 
-def max_evals(max_evals, save_frequency=5):
+def max_evals(max_evals, save_frequency=1):
     """Decorator to enforce a maximum number of function evaluations.
 
     Throws a MaximumEvaluationsException during evaluations after
