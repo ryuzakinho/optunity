@@ -255,8 +255,6 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             key, value = saved_f['log_data'].popitem()
             f.call_log.insert(value, **key._asdict())
 
-        f.num_evals = saved_f['num_evals']
-
     else:
         # We are not restoring.
         missing_evals = max_evals // 2
@@ -271,7 +269,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
 
         f = fun.logged(f)
 
-    num_evals = -len(f.call_log)
+    num_evals = len(f.call_log)
 
     time = timeit.default_timer()
     while True:
@@ -279,7 +277,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             solution, report = solver.optimize(f, maximize, pmap=pmap)
         except fun.ModuloEvaluationsException:
             # We need to save f in order for it to be used later.
-            dict_to_save = {'log_data': f.call_log.data, 'max_evals': max_evals, 'num_evals': f.num_evals}
+            dict_to_save = {'log_data': f.call_log.data, 'max_evals': max_evals, 'num_evals': num_evals}
             pickle.dump(dict_to_save, open('/tmp/optunity_saves/saved.pkl', 'wb'))
         except fun.MaximumEvaluationsException:
             # early stopping because maximum number of evaluations is reached
@@ -298,7 +296,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
     if decoder: solution = decoder(solution)
 
     optimum = f.call_log.get(**solution)
-    num_evals += len(f.call_log)
+    num_evals = len(f.call_log)
 
     # use namedtuple to enforce uniformity in case of changes
     stats = optimize_stats(num_evals, time)
