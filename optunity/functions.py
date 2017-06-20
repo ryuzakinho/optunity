@@ -363,6 +363,7 @@ def max_evals(max_evals, save_frequency=2):
             if wrapped_f.num_evals >= max_evals:
                 raise MaximumEvaluationsException(max_evals)
             elif wrapped_f.num_evals % save_frequency == 0 and wrapped_f.num_evals > 0:
+                wrapped_f.num_evals += 1
                 raise ModuloEvaluationsException(wrapped_f.num_evals)
             else:
                 wrapped_f.num_evals += 1
