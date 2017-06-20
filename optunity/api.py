@@ -240,7 +240,8 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
 
     f = fun.logged(f)
     num_evals = -len(f.call_log)
-    f.call_log = f_saved
+    if f_saved:
+        f.call_log = f_saved
 
     time = timeit.default_timer()
     while True:
