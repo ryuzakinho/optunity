@@ -252,9 +252,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
         # A hack to avoid skipping some evaluations.
         # TODO: handle saving frequency as a variable
         missing_evals = max_evals // 2
-        while missing_evals != 0:
-            max_evals += missing_evals
-            missing_evals = missing_evals // 2
+        max_evals += 2 * missing_evals
 
         if max_evals > 0:
             f = fun.max_evals(max_evals)(func)
@@ -278,9 +276,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
         # We are not restoring.
 
         missing_evals = max_evals // 2
-        while missing_evals != 0:
-            max_evals += missing_evals
-            missing_evals = missing_evals // 2
+        max_evals += 2 * missing_evals
 
         if max_evals > 0:
             f = fun.max_evals(max_evals)(func)
