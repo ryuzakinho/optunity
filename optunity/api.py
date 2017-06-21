@@ -235,6 +235,10 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
     Please refer to docs of optunity.maximize_results
     and optunity.maximize_stats.
 
+    This file was modified to introduce the possibility to save the progress of the optimization.
+    If you wish to save or restore or both, please provide the required parameters.
+
+
     """
 
     # This variable is used for saving purposes.
