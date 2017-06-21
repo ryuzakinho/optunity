@@ -54,6 +54,8 @@ import timeit
 import sys
 import operator
 import pickle
+import os
+import time
 
 # optunity imports
 from . import functions as fun
@@ -214,7 +216,7 @@ def minimize(f, num_evals=50, solver_name=None, pmap=map, **kwargs):
     return solution, details, suggestion
 
 
-def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, saved_f=None):
+def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, save_dir=None, restore_file_path=None):
     """Optimizes func with given solver.
 
     :param solver: the solver to be used, for instance a result from :func:`optunity.make_solver`
@@ -236,12 +238,9 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
     # This variable is used for saving purposes.
     original_max_evals = max_evals
 
-    try:
-        # TODO: provide a path to the file.
-        # Trying to load a pickle for now.
-        saved_f = pickle.load(open('/tmp/optunity_saves/saved.pkl', 'rb'))
-    except FileNotFoundError:
-        saved_f = None
+    saved_f = None
+    if restore_file_path:
+        saved_f = pickle.load(open(restore_file_path, 'rb'))
 
     if saved_f:
         # We are restoring.
@@ -271,7 +270,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             f.call_log.insert(value, **key._asdict())
 
         # Restoring the elapsed time.
-        time = timeit.default_timer() - saved_f['elapsed_time']
+        starting_time = timeit.default_timer() - saved_f['elapsed_time']
 
     else:
         # We are not restoring.
@@ -288,7 +287,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
 
         f = fun.logged(f)
 
-        time = timeit.default_timer()
+        starting_time = timeit.default_timer()
     while True:
         try:
             # If we reload a file while we have already done the required number of evaluations, we just return the
@@ -298,22 +297,24 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             solution, report = solver.optimize(f, maximize, pmap=pmap)
         except fun.ModuloEvaluationsException:
             # We need to save f in order for it to be used later.
-
-            if saved_f:
-                if len(f.call_log) == saved_f['max_evals']:
-                    num_evaluations = max_evals
+            if save_dir:
+                if saved_f:
+                    if len(f.call_log) == saved_f['max_evals']:
+                        num_evaluations = max_evals
+                    else:
+                        num_evaluations = len(f.call_log)
+                    dict_to_save = {'log_data': f.call_log.data, 'max_evals': saved_f['max_evals'],
+                                    'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - starting_time}
                 else:
-                    num_evaluations = len(f.call_log)
-                dict_to_save = {'log_data': f.call_log.data, 'max_evals': saved_f['max_evals'],
-                                'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time}
-            else:
-                if len(f.call_log) == original_max_evals:
-                    num_evaluations = max_evals
-                else:
-                    num_evaluations = len(f.call_log)
-                dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
-                                'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time}
-            pickle.dump(dict_to_save, open('/tmp/optunity_saves/saved.pkl', 'wb'))
+                    if len(f.call_log) == original_max_evals:
+                        num_evaluations = max_evals
+                    else:
+                        num_evaluations = len(f.call_log)
+                    dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
+                                    'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - starting_time}
+                pickle.dump(dict_to_save, open(os.path.join(save_dir,
+                                                            'optunity_save_{}'.format(time.strftime("%Y%m%d-%H%M%S"))),
+                                               'wb'))
         except fun.MaximumEvaluationsException:
             # early stopping because maximum number of evaluations is reached
             # retrieve solution from the call log
@@ -324,26 +325,29 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                 index, _ = min(enumerate(f.call_log.values()), key=operator.itemgetter(1))
             solution = list(f.call_log.keys())[index]._asdict()
 
-            # We pickle our data.
-            if saved_f:
-                if len(f.call_log) == saved_f['max_evals']:
-                    num_evaluations = max_evals
+            if save_dir:
+                # If the user provided a path to save a pickle.
+                if saved_f:
+                    if len(f.call_log) == saved_f['max_evals']:
+                        num_evaluations = max_evals
+                    else:
+                        num_evaluations = len(f.call_log)
+                    dict_to_save = {'log_data': f.call_log.data, 'max_evals': saved_f['max_evals'],
+                                    'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - starting_time}
                 else:
-                    num_evaluations = len(f.call_log)
-                dict_to_save = {'log_data': f.call_log.data, 'max_evals': saved_f['max_evals'],
-                                'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time}
-            else:
-                if len(f.call_log) == original_max_evals:
-                    num_evaluations = max_evals
-                else:
-                    num_evaluations = len(f.call_log)
-                dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
-                                'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time}
-            pickle.dump(dict_to_save, open('/tmp/optunity_saves/saved.pkl', 'wb'))
+                    if len(f.call_log) == original_max_evals:
+                        num_evaluations = max_evals
+                    else:
+                        num_evaluations = len(f.call_log)
+                    dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
+                                    'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - starting_time}
+                pickle.dump(dict_to_save, open(os.path.join(save_dir,
+                                                            'optunity_save_{}'.format(starting_time.strftime("%Y%m%d-%H%M%S"))),
+                                               'wb'))
 
             # No need to loop again
             break
-    time = timeit.default_timer() - time
+    starting_time = timeit.default_timer() - starting_time
 
     # TODO why is this necessary?
     if decoder:
@@ -353,7 +357,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
     num_evals = len(f.call_log)
 
     # use namedtuple to enforce uniformity in case of changes
-    stats = optimize_stats(num_evals, time)
+    stats = optimize_stats(num_evals, starting_time)
 
     call_dict = f.call_log.to_dict()
     return solution, optimize_results(optimum, stats._asdict(),
