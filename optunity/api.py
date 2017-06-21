@@ -154,7 +154,7 @@ def suggest_solver(num_evals=50, solver_name=None, **kwargs):
     return suggestion
 
 
-def maximize(f, num_evals=50, solver_name=None, pmap=map, **kwargs):
+def maximize(f, num_evals=50, solver_name=None, pmap=map, save_dir=None, restore_file_path=None, **kwargs):
     """Basic function maximization routine. Maximizes ``f`` within
     the given box constraints.
 
@@ -181,11 +181,11 @@ def maximize(f, num_evals=50, solver_name=None, pmap=map, **kwargs):
     suggestion = suggest_solver(num_evals, solver_name, **kwargs)
     solver = make_solver(**suggestion)
     solution, details = optimize(solver, f, maximize=True, max_evals=num_evals,
-                                 pmap=pmap)
+                                 pmap=pmap, save_dir=save_dir, restore_file_path=restore_file_path)
     return solution, details, suggestion
 
 
-def minimize(f, num_evals=50, solver_name=None, pmap=map, **kwargs):
+def minimize(f, num_evals=50, solver_name=None, pmap=map, save_dir=None, restore_file_path=None, **kwargs):
     """Basic function minimization routine. Minimizes ``f`` within
     the given box constraints.
 
@@ -212,7 +212,7 @@ def minimize(f, num_evals=50, solver_name=None, pmap=map, **kwargs):
     suggestion = suggest_solver(num_evals, solver_name, **kwargs)
     solver = make_solver(**suggestion)
     solution, details = optimize(solver, func, maximize=False, max_evals=num_evals,
-                                 pmap=pmap)
+                                 pmap=pmap, save_dir=save_dir, restore_file_path=restore_file_path)
     return solution, details, suggestion
 
 
@@ -228,6 +228,8 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
     :type max_evals: int
     :param pmap: the map() function to use, to vectorize use :func:`optunity.parallel.pmap`
     :type pmap: function
+    :param save_dir: directory where we wish to save the evaluations.
+    :param restore_file_path: file from which we wish to restore our evaluations.
 
     Returns the solution and a namedtuple with further details.
     Please refer to docs of optunity.maximize_results
@@ -434,7 +436,7 @@ def _wrap_hard_box_constraints(f, box, default):
     return wrap_constraints(f, default, range_oo=box)
 
 
-def maximize_structured(f, search_space, num_evals=50, pmap=map):
+def maximize_structured(f, search_space, num_evals=50, pmap=map, save_dir=None, restore_file_path=None):
     """Basic function maximization routine. Maximizes ``f`` within
     the given box constraints.
 
@@ -463,11 +465,11 @@ def maximize_structured(f, search_space, num_evals=50, pmap=map):
     suggestion = suggest_solver(num_evals, "particle swarm", **box)
     solver = make_solver(**suggestion)
     solution, details = optimize(solver, f, maximize=True, max_evals=num_evals,
-                                 pmap=pmap, decoder=tree.decode)
+                                 pmap=pmap, decoder=tree.decode, save_dir=save_dir, restore_file_path=restore_file_path)
     return solution, details, suggestion
 
 
-def minimize_structured(f, search_space, num_evals=50, pmap=map):
+def minimize_structured(f, search_space, num_evals=50, pmap=map, save_dir=None, restore_file_path=None):
     """Basic function minimization routine. Minimizes ``f`` within
     the given box constraints.
 
@@ -496,5 +498,5 @@ def minimize_structured(f, search_space, num_evals=50, pmap=map):
     suggestion = suggest_solver(num_evals, "particle swarm", **box)
     solver = make_solver(**suggestion)
     solution, details = optimize(solver, f, maximize=False, max_evals=num_evals,
-                                 pmap=pmap, decoder=tree.decode)
+                                 pmap=pmap, decoder=tree.decode, save_dir=save_dir, restore_file_path=restore_file_path)
     return solution, details, suggestion
