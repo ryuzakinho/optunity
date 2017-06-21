@@ -348,7 +348,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                         num_evaluations = len(f.call_log)
                     dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
                                     'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time_var}
-                pickle.dump(dict_to_save, open(os.path.join(save_dir, 'optunity_save'), 'wb'))
+                pickle.dump(dict_to_save, open(os.path.join(save_dir, 'optunity_save.pkl'), 'wb'))
             # No need to loop again
             break
 
