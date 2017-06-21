@@ -272,7 +272,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             f.call_log.insert(value, **key._asdict())
 
         # Restoring the elapsed time.
-        starting_time = timeit.default_timer() - saved_f['elapsed_time']
+        time_var = timeit.default_timer() - saved_f['elapsed_time']
 
     else:
         # We are not restoring.
@@ -289,7 +289,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
 
         f = fun.logged(f)
 
-        starting_time = timeit.default_timer()
+        time_var = timeit.default_timer()
     while True:
         try:
             # If we reload a file while we have already done the required number of evaluations, we just return the
@@ -311,14 +311,14 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                     else:
                         num_evaluations = len(f.call_log)
                     dict_to_save = {'log_data': f.call_log.data, 'max_evals': saved_f['max_evals'],
-                                    'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - starting_time}
+                                    'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time_var}
                 else:
                     if len(f.call_log) == original_max_evals:
                         num_evaluations = max_evals
                     else:
                         num_evaluations = len(f.call_log)
                     dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
-                                    'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - starting_time}
+                                    'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time_var}
                 pickle.dump(dict_to_save, open(os.path.join(save_dir,
                                                             'optunity_save_{}'.format(time.strftime("%Y%m%d-%H%M%S"))),
                                                'wb'))
@@ -340,21 +340,21 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                     else:
                         num_evaluations = len(f.call_log)
                     dict_to_save = {'log_data': f.call_log.data, 'max_evals': saved_f['max_evals'],
-                                    'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - starting_time}
+                                    'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time_var}
                 else:
                     if len(f.call_log) == original_max_evals:
                         num_evaluations = max_evals
                     else:
                         num_evaluations = len(f.call_log)
                     dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
-                                    'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - starting_time}
+                                    'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time_var}
                 pickle.dump(dict_to_save, open(os.path.join(save_dir,
                                                             'optunity_save_{}'.format(time.strftime("%Y%m%d-%H%M%S"))),
                                                'wb'))
             # No need to loop again
             break
 
-    starting_time = timeit.default_timer() - starting_time
+    time_var = timeit.default_timer() - time_var
 
     # TODO why is this necessary?
     if decoder:
@@ -364,7 +364,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
     num_evals = len(f.call_log)
 
     # use namedtuple to enforce uniformity in case of changes
-    stats = optimize_stats(num_evals, starting_time)
+    stats = optimize_stats(num_evals, time_var)
 
     call_dict = f.call_log.to_dict()
     return solution, optimize_results(optimum, stats._asdict(),
