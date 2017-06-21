@@ -294,9 +294,14 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
         try:
             # If we reload a file while we have already done the required number of evaluations, we just return the
             # best solution.
-            if f.num_evals == max_evals:
-                raise fun.MaximumEvaluationsException(max_evals)
+            if max_evals > 0:
+                if saved_f and f.num_evals == max_evals:
+                    raise fun.MaximumEvaluationsException(max_evals)
+
             solution, report = solver.optimize(f, maximize, pmap=pmap)
+
+            # Break from the while loop once done.
+            break
         except fun.ModuloEvaluationsException:
             # We need to save f in order for it to be used later.
             if save_dir:
@@ -346,9 +351,9 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                 pickle.dump(dict_to_save, open(os.path.join(save_dir,
                                                             'optunity_save_{}'.format(time.strftime("%Y%m%d-%H%M%S"))),
                                                'wb'))
-
             # No need to loop again
             break
+
     starting_time = timeit.default_timer() - starting_time
 
     # TODO why is this necessary?
