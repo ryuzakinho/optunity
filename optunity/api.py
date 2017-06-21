@@ -291,6 +291,10 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
         time = timeit.default_timer()
     while True:
         try:
+            # If we reload a file while we have already done the required number of evaluations, we just return the
+            # best solution.
+            if f.num_evals == max_evals:
+                raise fun.MaximumEvaluationsException
             solution, report = solver.optimize(f, maximize, pmap=pmap)
         except fun.ModuloEvaluationsException:
             # We need to save f in order for it to be used later.
