@@ -323,6 +323,24 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             else:
                 index, _ = min(enumerate(f.call_log.values()), key=operator.itemgetter(1))
             solution = list(f.call_log.keys())[index]._asdict()
+
+            # We pickle our data.
+            if saved_f:
+                if len(f.call_log) == saved_f['max_evals']:
+                    num_evaluations = max_evals
+                else:
+                    num_evaluations = len(f.call_log)
+                dict_to_save = {'log_data': f.call_log.data, 'max_evals': saved_f['max_evals'],
+                                'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time}
+            else:
+                if len(f.call_log) == original_max_evals:
+                    num_evaluations = max_evals
+                else:
+                    num_evaluations = len(f.call_log)
+                dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
+                                'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time}
+            pickle.dump(dict_to_save, open('/tmp/optunity_saves/saved.pkl', 'wb'))
+
             # No need to loop again
             break
     time = timeit.default_timer() - time
