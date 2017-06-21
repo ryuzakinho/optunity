@@ -344,7 +344,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                     dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
                                     'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - starting_time}
                 pickle.dump(dict_to_save, open(os.path.join(save_dir,
-                                                            'optunity_save_{}'.format(starting_time.strftime("%Y%m%d-%H%M%S"))),
+                                                            'optunity_save_{}'.format(time.strftime("%Y%m%d-%H%M%S"))),
                                                'wb'))
 
             # No need to loop again
