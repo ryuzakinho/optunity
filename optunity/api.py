@@ -233,6 +233,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
 
     """
 
+    # This variable is used for saving purposes.
     original_max_evals = max_evals
 
     try:
@@ -244,8 +245,11 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
 
     if saved_f:
         # We are restoring.
+
         max_evals = saved_f['max_evals']
 
+        # A hack to avoid skipping some evaluations.
+        # TODO: handle saving frequency as a variable
         missing_evals = max_evals // 2
         while missing_evals != 0:
             max_evals += missing_evals
@@ -256,16 +260,22 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
         else:
             f = func
 
+        # How many evaluations we already did.
         f.num_evals = saved_f['num_evals']
 
         f = fun.logged(f)
 
+        # Restore the log.
         while len(saved_f['log_data']) > 0:
             key, value = saved_f['log_data'].popitem()
             f.call_log.insert(value, **key._asdict())
 
+        # Restoring the elapsed time.
+        time = timeit.default_timer() - saved_f['elapsed_time']
+
     else:
         # We are not restoring.
+
         missing_evals = max_evals // 2
         while missing_evals != 0:
             max_evals += missing_evals
@@ -278,9 +288,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
 
         f = fun.logged(f)
 
-    num_evals = len(f.call_log)
-
-    time = timeit.default_timer()
+        time = timeit.default_timer()
     while True:
         try:
             solution, report = solver.optimize(f, maximize, pmap=pmap)
@@ -288,10 +296,10 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             # We need to save f in order for it to be used later.
             if saved_f:
                 dict_to_save = {'log_data': f.call_log.data, 'max_evals': saved_f['max_evals'],
-                                'num_evals': len(f.call_log)}
+                                'num_evals': len(f.call_log), 'elapsed_time': timeit.default_timer() - time}
             else:
                 dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
-                                'num_evals': len(f.call_log)}
+                                'num_evals': len(f.call_log), 'elapsed_time': timeit.default_timer() - time}
             pickle.dump(dict_to_save, open('/tmp/optunity_saves/saved.pkl', 'wb'))
         except fun.MaximumEvaluationsException:
             # early stopping because maximum number of evaluations is reached
@@ -307,7 +315,8 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
     time = timeit.default_timer() - time
 
     # TODO why is this necessary?
-    if decoder: solution = decoder(solution)
+    if decoder:
+        solution = decoder(solution)
 
     optimum = f.call_log.get(**solution)
     num_evals = len(f.call_log)
