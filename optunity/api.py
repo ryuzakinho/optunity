@@ -58,6 +58,8 @@ import os
 import time
 
 # optunity imports
+import warnings
+
 from . import functions as fun
 from . import solvers
 from . import search_spaces
@@ -247,6 +249,22 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
     saved_f = None
     if restore_file_path:
         saved_f = pickle.load(open(restore_file_path, 'rb'))
+    else:
+        if os.path.isfile(os.path.join(save_dir, 'optunity_save_{}_evals.pkl'.format(original_max_evals))):
+            valid = {"yes": True, "y": True, "ye": True,
+                     "no": False, "n": False}
+            warnings.warn("You are about to overwrite an existing save, are you sure: [y/n]")
+            while True:
+                choice = input().lower()
+                if choice in valid:
+                    if valid[choice]:
+                        break
+                    else:
+                        print("Aborting run !!!")
+                        sys.exit(999)
+                else:
+                    sys.stdout.write("Please respond with 'yes' or 'no' "
+                                     "(or 'y' or 'n').\n")
 
     if saved_f:
         # We are restoring.
