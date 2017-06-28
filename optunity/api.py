@@ -248,7 +248,8 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
 
     saved_f = None
     if restore_file_path:
-        saved_f = pickle.load(open(restore_file_path, 'rb'))
+        with open(restore_file_path, 'rb') as f:
+            saved_f = pickle.load(f)
     else:
         if save_dir:
             if os.path.isfile(os.path.join(save_dir, 'optunity_save_{}_evals.pkl'.format(original_max_evals))):
