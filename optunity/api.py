@@ -286,9 +286,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
         else:
             max_evals += 2 * missing_evals
 
-        if max_evals - saved_f['num_evals'] > 0:
-            max_evals -= saved_f['num_evals']
-        else:
+        if max_evals - saved_f['num_evals'] <= 0:
             print("Already done at least the correct number opf evaluations.")
 
             if max_evals > 0:
