@@ -250,34 +250,33 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
     if restore_file_path:
         saved_f = pickle.load(open(restore_file_path, 'rb'))
     else:
-        if os.path.isfile(os.path.join(save_dir, 'optunity_save_{}_evals.pkl'.format(original_max_evals))):
-            valid = {"yes": True, "y": True, "ye": True,
-                     "no": False, "n": False}
-            warnings.warn("You are about to overwrite an existing save, are you sure: [y/n]")
-            while True:
-                choice = input().lower()
-                if choice in valid:
-                    if valid[choice]:
-                        print("Continuing the process !!!")
-                        break
+        if save_dir:
+            if os.path.isfile(os.path.join(save_dir, 'optunity_save_{}_evals.pkl'.format(original_max_evals))):
+                valid = {"yes": True, "y": True, "ye": True,
+                         "no": False, "n": False}
+                warnings.warn("You are about to overwrite an existing save, are you sure: [y/n]")
+                while True:
+                    choice = input().lower()
+                    if choice in valid:
+                        if valid[choice]:
+                            print("Continuing the process !!!")
+                            break
+                        else:
+                            print("Aborting run !!!")
+                            sys.exit(999)
                     else:
-                        print("Aborting run !!!")
-                        sys.exit(999)
-                else:
-                    sys.stdout.write("Please respond with 'yes' or 'no' "
-                                     "(or 'y' or 'n').\n")
+                        sys.stdout.write("Please respond with 'yes' or 'no' "
+                                         "(or 'y' or 'n').\n")
 
     if saved_f:
         # We are restoring.
 
-        if max_evals == 0:
-            max_evals = saved_f['max_evals']
+        # max_evals = saved_f['max_evals']
+        if max_evals - saved_f['num_evals'] > 0:
+            max_evals -= saved_f['max_evals']
         else:
-            if saved_f['max_evals'] - max_evals > 0:
-                max_evals -= saved_f['max_evals']
-            else:
-                print("Already done the correct number of evaluations")
-                raise fun.MaximumEvaluationsException
+            print("Already done the correct number of evaluations")
+            raise fun.MaximumEvaluationsException
 
         # A hack to avoid skipping some evaluations.
         # TODO: handle saving frequency as a variable
@@ -342,7 +341,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                         num_evaluations = max_evals
                     else:
                         num_evaluations = len(f.call_log)
-                    dict_to_save = {'log_data': f.call_log.data, 'max_evals': saved_f['max_evals'],
+                    dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
                                     'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time_var}
                 else:
                     if len(f.call_log) == original_max_evals:
