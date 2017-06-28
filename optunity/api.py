@@ -254,7 +254,9 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             if os.path.isfile(os.path.join(save_dir, 'optunity_save_{}_evals.pkl'.format(original_max_evals))):
                 valid = {"yes": True, "y": True, "ye": True,
                          "no": False, "n": False}
-                warnings.warn("You are about to overwrite an existing save, are you sure: [y/n]")
+                print('######## WARNING ########')
+                print("You are about to overwrite an existing save.")
+                print("Are you sure you want to proceed [y/n]:\n")
                 while True:
                     choice = input().lower()
                     if choice in valid:
@@ -271,12 +273,9 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
     if saved_f:
         # We are restoring.
 
-        # max_evals = saved_f['max_evals']
-        if max_evals - saved_f['num_evals'] > 0:
-            max_evals -= saved_f['num_evals']
-        else:
-            print("Already done the correct number of evaluations")
-            raise fun.MaximumEvaluationsException
+        if max_evals == 0:
+            original_max_evals = saved_f['max_evals']
+            max_evals = saved_f['max_evals']
 
         # A hack to avoid skipping some evaluations.
         # TODO: handle saving frequency as a variable
@@ -285,6 +284,12 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             max_evals += 2 * missing_evals - 1
         else:
             max_evals += 2 * missing_evals
+
+        if max_evals - saved_f['num_evals'] > 0:
+            max_evals -= saved_f['num_evals']
+        else:
+            print("Already done the correct number of evaluations")
+            raise fun.MaximumEvaluationsException
 
         if max_evals > 0:
             f = fun.max_evals(max_evals)(func)
@@ -351,7 +356,8 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                     dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
                                     'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time_var}
                 pickle.dump(dict_to_save, open(os.path.join(save_dir,
-                                                            'optunity_save_{}_evals.pkl'.format(original_max_evals)), 'wb'))
+                                                            'optunity_save_{}_evals.pkl'.format(original_max_evals)),
+                                               'wb'))
         except fun.MaximumEvaluationsException:
             # early stopping because maximum number of evaluations is reached
             # retrieve solution from the call log
@@ -369,9 +375,10 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                         num_evaluations = max_evals
                     else:
                         num_evaluations = len(f.call_log)
-                    dict_to_save = {'log_data': f.call_log.data, 'max_evals': saved_f['max_evals'],
+                    dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
                                     'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time_var}
                 else:
+                    # The user did not provide us with a path to save.
                     if len(f.call_log) == original_max_evals:
                         num_evaluations = max_evals
                     else:
@@ -379,7 +386,8 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                     dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
                                     'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time_var}
                 pickle.dump(dict_to_save, open(os.path.join(save_dir,
-                                                            'optunity_save_{}_evals.pkl'.format(original_max_evals))), 'wb')
+                                                            'optunity_save_{}_evals.pkl'.format(original_max_evals)),
+                                               'wb'))
             # No need to loop again
             break
 
