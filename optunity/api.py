@@ -248,8 +248,8 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
 
     saved_f = None
     if restore_file_path:
-        with open(restore_file_path, 'rb') as f:
-            saved_f = pickle.load(f)
+        with open(restore_file_path, 'rb') as f_handler:
+            saved_f = pickle.load(f_handler)
     else:
         if save_dir:
             if os.path.isfile(os.path.join(save_dir, 'optunity_save_{}_evals.pkl'.format(original_max_evals))):
@@ -357,7 +357,8 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                     dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
                                     'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time_var}
                 print("Saving current run.")
-                with open(os.path.join(save_dir, 'optunity_save_{}_evals.pkl'.format(original_max_evals)), 'wb') as f:
+                with open(os.path.join(save_dir, 'optunity_save_{}_evals.pkl'.format(original_max_evals)), 'wb') \
+                        as f_handler:
                     pickle.dump(dict_to_save, f)
         except fun.MaximumEvaluationsException:
             # early stopping because maximum number of evaluations is reached
@@ -387,7 +388,8 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                     dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
                                     'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time_var}
                 print("Saving current run.")
-                with open(os.path.join(save_dir, 'optunity_save_{}_evals.pkl'.format(original_max_evals)), 'wb') as f:
+                with open(os.path.join(save_dir, 'optunity_save_{}_evals.pkl'.format(original_max_evals)), 'wb') \
+                        as f_handler:
                     pickle.dump(dict_to_save, f)
             # No need to loop again
             break
