@@ -290,7 +290,26 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             max_evals -= saved_f['num_evals']
         else:
             print("Already done the correct number of evaluations")
-            raise fun.MaximumEvaluationsException(max_evals)
+            report = None
+            if maximize:
+                index, _ = max(enumerate(f.call_log.values()), key=operator.itemgetter(1))
+            else:
+                index, _ = min(enumerate(f.call_log.values()), key=operator.itemgetter(1))
+            solution = list(f.call_log.keys())[index]._asdict()
+
+            # TODO why is this necessary?
+            if decoder:
+                solution = decoder(solution)
+
+            optimum = f.call_log.get(**solution)
+            num_evals = len(f.call_log)
+
+            # use namedtuple to enforce uniformity in case of changes
+            stats = optimize_stats(num_evals, saved_f['elapsed_time'])
+
+            call_dict = f.call_log.to_dict()
+            return solution, optimize_results(optimum, stats._asdict(),
+                                              call_dict, report)
 
         if max_evals > 0:
             f = fun.max_evals(max_evals)(func)
