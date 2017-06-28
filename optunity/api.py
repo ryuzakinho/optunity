@@ -289,7 +289,22 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
         if max_evals - saved_f['num_evals'] > 0:
             max_evals -= saved_f['num_evals']
         else:
-            print("Already done the correct number of evaluations")
+            print("Already done at least the correct number opf evaluations.")
+
+            if max_evals > 0:
+                f = fun.max_evals(max_evals)(func)
+            else:
+                f = func
+
+            # How many evaluations we already did.
+            f.num_evals = saved_f['num_evals']
+
+            f = fun.logged(f)
+
+            # Restore the log.
+            while len(saved_f['log_data']) > 0:
+                key, value = saved_f['log_data'].popitem()
+                f.call_log.insert(value, **key._asdict())
             report = None
             if maximize:
                 index, _ = max(enumerate(f.call_log.values()), key=operator.itemgetter(1))
