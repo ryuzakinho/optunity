@@ -272,7 +272,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
         if max_evals == 0:
             max_evals = saved_f['max_evals']
         else:
-            if max_evals - saved_f['max_evals'] > 0:
+            if saved_f['max_evals'] - max_evals > 0:
                 max_evals -= saved_f['max_evals']
             else:
                 print("Already done the correct number of evaluations")
