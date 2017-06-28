@@ -290,7 +290,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
             max_evals -= saved_f['num_evals']
         else:
             print("Already done the correct number of evaluations")
-            raise fun.MaximumEvaluationsException
+            raise fun.MaximumEvaluationsException(max_evals)
 
         if max_evals > 0:
             f = fun.max_evals(max_evals)(func)
