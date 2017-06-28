@@ -327,7 +327,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                     dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
                                     'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time_var}
                 pickle.dump(dict_to_save, open(os.path.join(save_dir,
-                                                            'optunity_save_{}_evals.pkl'.format(max_evals)), 'wb'))
+                                                            'optunity_save_{}_evals.pkl'.format(original_max_evals)), 'wb'))
         except fun.MaximumEvaluationsException:
             # early stopping because maximum number of evaluations is reached
             # retrieve solution from the call log
@@ -355,7 +355,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                     dict_to_save = {'log_data': f.call_log.data, 'max_evals': original_max_evals,
                                     'num_evals': num_evaluations, 'elapsed_time': timeit.default_timer() - time_var}
                 pickle.dump(dict_to_save, open(os.path.join(save_dir,
-                                                            'optunity_save_{}_evals.pkl'.format(max_evals))), 'wb')
+                                                            'optunity_save_{}_evals.pkl'.format(original_max_evals))), 'wb')
             # No need to loop again
             break
 
