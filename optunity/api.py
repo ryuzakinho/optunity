@@ -258,6 +258,7 @@ def optimize(solver, func, maximize=True, max_evals=0, pmap=map, decoder=None, s
                 choice = input().lower()
                 if choice in valid:
                     if valid[choice]:
+                        print("Continuing the process !!!")
                         break
                     else:
                         print("Aborting run !!!")
